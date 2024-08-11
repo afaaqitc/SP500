@@ -1,0 +1,1451 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+<meta name="author" content="JDRK" />
+
+<meta name="date" content="2024-08-11" />
+
+<title>SP500-Forecast</title>
+
+<script src="site_libs/header-attrs-2.27/header-attrs.js"></script>
+<script src="site_libs/jquery-3.6.0/jquery-3.6.0.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<style>h1 {font-size: 34px;}
+       h1.title {font-size: 38px;}
+       h2 {font-size: 30px;}
+       h3 {font-size: 24px;}
+       h4 {font-size: 18px;}
+       h5 {font-size: 16px;}
+       h6 {font-size: 12px;}
+       code {color: inherit; background-color: rgba(0, 0, 0, 0.04);}
+       pre:not([class]) { background-color: white }</style>
+<script src="site_libs/jqueryui-1.13.2/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<script src="site_libs/htmlwidgets-1.6.4/htmlwidgets.js"></script>
+<script src="site_libs/plotly-binding-4.10.4/plotly.js"></script>
+<script src="site_libs/typedarray-0.1/typedarray.min.js"></script>
+<link href="site_libs/crosstalk-1.2.1/css/crosstalk.min.css" rel="stylesheet" />
+<script src="site_libs/crosstalk-1.2.1/js/crosstalk.min.js"></script>
+<link href="site_libs/plotly-htmlwidgets-css-2.11.1/plotly-htmlwidgets.css" rel="stylesheet" />
+<script src="site_libs/plotly-main-2.11.1/plotly-latest.min.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+
+
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+details > summary > p:only-child {
+  display: inline;
+}
+pre code {
+  padding: 0;
+}
+</style>
+
+
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before, .tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "\e259";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "\e258";
+  font-family: 'Glyphicons Halflings';
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div id="header">
+
+
+
+<h1 class="title toc-ignore">SP500-Forecast</h1>
+<h4 class="author">JDRK</h4>
+<h4 class="date">2024-08-11</h4>
+
+</div>
+
+
+<hr />
+<div id="last-year-chart" class="section level3">
+<h3>Last Year Chart</h3>
+<div id="htmlwidget-f98cfcec22bcde1e8622" style="width:800px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-f98cfcec22bcde1e8622">{"x":{"data":[{"x":[1698796800,1701388800,1704067200,1706745600,1709251200,1711929600,1714521600,1717200000,1719792000,1722470400],"y":[4539.5295531542788,4560.2543126604596,4580.9790721666404,4601.7038316728213,4622.4285911790021,4643.1533506851829,4663.8781101913637,4684.6028696975445,4705.3276292037253,4726.0523887099062],"text":["mn: 2023-11-01<br />values: 4539.530<br />cat: Forecast_Price<br />cat: Forecast_Price","mn: 2023-12-01<br />values: 4560.254<br />cat: Forecast_Price<br />cat: Forecast_Price","mn: 2024-01-01<br />values: 4580.979<br />cat: Forecast_Price<br />cat: Forecast_Price","mn: 2024-02-01<br />values: 4601.704<br />cat: Forecast_Price<br />cat: Forecast_Price","mn: 2024-03-01<br />values: 4622.429<br />cat: Forecast_Price<br />cat: Forecast_Price","mn: 2024-04-01<br />values: 4643.153<br />cat: Forecast_Price<br />cat: Forecast_Price","mn: 2024-05-01<br />values: 4663.878<br />cat: Forecast_Price<br />cat: Forecast_Price","mn: 2024-06-01<br />values: 4684.603<br />cat: Forecast_Price<br />cat: Forecast_Price","mn: 2024-07-01<br />values: 4705.328<br />cat: Forecast_Price<br />cat: Forecast_Price","mn: 2024-08-01<br />values: 4726.052<br />cat: Forecast_Price<br />cat: Forecast_Price"],"type":"scatter","mode":"lines","line":{"width":2.6456692913385824,"color":"rgba(248,118,109,1)","dash":"solid"},"hoveron":"points","name":"(Forecast_Price,1)","legendgroup":"(Forecast_Price,1)","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1698796800,1701388800,1704067200,1706745600,1709251200,1711929600,1714521600,1717200000,1719792000,1722470400],"y":[4701.525808049666,4789.3516133871653,4861.5648162813286,4925.6963414635957,4984.6632292254708,5039.9615154207222,5092.4799139683873,5142.7974711509542,5191.316393889887,5238.3295265965307],"text":["mn: 2023-11-01<br />values: 4701.526<br />cat: Hi<br />cat: Hi","mn: 2023-12-01<br />values: 4789.352<br />cat: Hi<br />cat: Hi","mn: 2024-01-01<br />values: 4861.565<br />cat: Hi<br />cat: Hi","mn: 2024-02-01<br />values: 4925.696<br />cat: Hi<br />cat: Hi","mn: 2024-03-01<br />values: 4984.663<br />cat: Hi<br />cat: Hi","mn: 2024-04-01<br />values: 5039.962<br />cat: Hi<br />cat: Hi","mn: 2024-05-01<br />values: 5092.480<br />cat: Hi<br />cat: Hi","mn: 2024-06-01<br />values: 5142.797<br />cat: Hi<br />cat: Hi","mn: 2024-07-01<br />values: 5191.316<br />cat: Hi<br />cat: Hi","mn: 2024-08-01<br />values: 5238.330<br />cat: Hi<br />cat: Hi"],"type":"scatter","mode":"lines","line":{"width":2.6456692913385824,"color":"rgba(124,174,0,1)","dash":"solid"},"hoveron":"points","name":"(Hi,1)","legendgroup":"(Hi,1)","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1698796800,1701388800,1704067200,1706745600,1709251200,1711929600,1714521600,1717200000,1719792000,1722470400],"y":[4377.5332982588916,4331.1570119337539,4300.3933280519523,4277.7113218820468,4260.1939531325334,4246.3451859496436,4235.2763064143401,4226.4082682441349,4219.3388645175637,4213.7752508232816],"text":["mn: 2023-11-01<br />values: 4377.533<br />cat: Low<br />cat: Low","mn: 2023-12-01<br />values: 4331.157<br />cat: Low<br />cat: Low","mn: 2024-01-01<br />values: 4300.393<br />cat: Low<br />cat: Low","mn: 2024-02-01<br />values: 4277.711<br />cat: Low<br />cat: Low","mn: 2024-03-01<br />values: 4260.194<br />cat: Low<br />cat: Low","mn: 2024-04-01<br />values: 4246.345<br />cat: Low<br />cat: Low","mn: 2024-05-01<br />values: 4235.276<br />cat: Low<br />cat: Low","mn: 2024-06-01<br />values: 4226.408<br />cat: Low<br />cat: Low","mn: 2024-07-01<br />values: 4219.339<br />cat: Low<br />cat: Low","mn: 2024-08-01<br />values: 4213.775<br />cat: Low<br />cat: Low"],"type":"scatter","mode":"lines","line":{"width":2.6456692913385824,"color":"rgba(0,191,196,1)","dash":"solid"},"hoveron":"points","name":"(Low,1)","legendgroup":"(Low,1)","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1698796800,1701388800,1704067200,1706745600,1709251200,1711929600,1714521600,1717200000,1719792000,1722470400],"y":[4303.204989346591,4587.159505208333,4751.8563939144733,4918.818204012784,5095.5514160156254,5196.1360351562498,5120.938731317935,5327.4779785156252,5530.3415039062502,5419.3505859375],"text":["mn: 2023-11-01<br />values: 4303.205<br />cat: price<br />cat: price","mn: 2023-12-01<br />values: 4587.160<br />cat: price<br />cat: price","mn: 2024-01-01<br />values: 4751.856<br />cat: price<br />cat: price","mn: 2024-02-01<br />values: 4918.818<br />cat: price<br />cat: price","mn: 2024-03-01<br />values: 5095.551<br />cat: price<br />cat: price","mn: 2024-04-01<br />values: 5196.136<br />cat: price<br />cat: price","mn: 2024-05-01<br />values: 5120.939<br />cat: price<br />cat: price","mn: 2024-06-01<br />values: 5327.478<br />cat: price<br />cat: price","mn: 2024-07-01<br />values: 5530.342<br />cat: price<br />cat: price","mn: 2024-08-01<br />values: 5419.351<br />cat: price<br />cat: price"],"type":"scatter","mode":"lines","line":{"width":2.6456692913385824,"color":"rgba(199,124,255,1)","dash":"solid"},"hoveron":"points","name":"(price,1)","legendgroup":"(price,1)","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":22.088280060882802,"r":7.3059360730593621,"b":23.02476823024768,"l":37.525944375259442},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[1697613120,1723654080],"tickmode":"array","ticktext":["November","December","January","February","March","April","May","June","July","August"],"tickvals":[1698796800,1701388800,1704067200,1706745600,1709251200,1711929600,1714521600,1717200000,1719792000,1722470400],"categoryorder":"array","categoryarray":["November","December","January","February","March","April","May","June","July","August"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(0,0,0,1)","family":"","size":13.283520132835198},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"y","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[4147.9469381691333,5596.1698165603984],"tickmode":"array","ticktext":["4500","5000","5500"],"tickvals":[4500,5000,5500],"categoryorder":"array","categoryarray":["4500","5000","5500"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(0,0,0,1)","family":"","size":13.283520132835198},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":"transparent","line":{"color":"rgba(51,51,51,1)","width":0.66417600664176002,"linetype":"solid"},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":true,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.8897637795275593,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"title":{"text":"cat","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}}},"hovermode":"closest","width":800,"barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"3990165354d9":{"x":{},"y":{},"colour":{},"type":"scatter"}},"cur_data":"3990165354d9","visdat":{"3990165354d9":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<hr />
+</div>
+<div id="last-year-table" class="section level3">
+<h3>Last Year Table</h3>
+<div id="zmmcgcbdcq" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#zmmcgcbdcq table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#zmmcgcbdcq thead, #zmmcgcbdcq tbody, #zmmcgcbdcq tfoot, #zmmcgcbdcq tr, #zmmcgcbdcq td, #zmmcgcbdcq th {
+  border-style: none;
+}
+
+#zmmcgcbdcq p {
+  margin: 0;
+  padding: 0;
+}
+
+#zmmcgcbdcq .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#zmmcgcbdcq .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#zmmcgcbdcq .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#zmmcgcbdcq .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#zmmcgcbdcq .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zmmcgcbdcq .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+}
+
+#zmmcgcbdcq .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#zmmcgcbdcq .gt_col_heading {
+  color: #FFFFFF;
+  background-color: #004D80;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#zmmcgcbdcq .gt_column_spanner_outer {
+  color: #FFFFFF;
+  background-color: #004D80;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#zmmcgcbdcq .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#zmmcgcbdcq .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#zmmcgcbdcq .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#zmmcgcbdcq .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#zmmcgcbdcq .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#zmmcgcbdcq .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  vertical-align: middle;
+}
+
+#zmmcgcbdcq .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#zmmcgcbdcq .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#zmmcgcbdcq .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: dashed;
+  border-top-width: 1px;
+  border-top-color: #929292;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #929292;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #929292;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#zmmcgcbdcq .gt_stub {
+  color: #333333;
+  background-color: #D5D5D5;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #FFFFFF;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zmmcgcbdcq .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#zmmcgcbdcq .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#zmmcgcbdcq .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#zmmcgcbdcq .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zmmcgcbdcq .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #929292;
+}
+
+#zmmcgcbdcq .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#zmmcgcbdcq .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+}
+
+#zmmcgcbdcq .gt_grand_summary_row {
+  color: #333333;
+  background-color: #D5D5D5;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zmmcgcbdcq .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #929292;
+}
+
+#zmmcgcbdcq .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #929292;
+}
+
+#zmmcgcbdcq .gt_striped {
+  background-color: #F4F4F4;
+}
+
+#zmmcgcbdcq .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+}
+
+#zmmcgcbdcq .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zmmcgcbdcq .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zmmcgcbdcq .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#zmmcgcbdcq .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#zmmcgcbdcq .gt_left {
+  text-align: left;
+}
+
+#zmmcgcbdcq .gt_center {
+  text-align: center;
+}
+
+#zmmcgcbdcq .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#zmmcgcbdcq .gt_font_normal {
+  font-weight: normal;
+}
+
+#zmmcgcbdcq .gt_font_bold {
+  font-weight: bold;
+}
+
+#zmmcgcbdcq .gt_font_italic {
+  font-style: italic;
+}
+
+#zmmcgcbdcq .gt_super {
+  font-size: 65%;
+}
+
+#zmmcgcbdcq .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#zmmcgcbdcq .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#zmmcgcbdcq .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#zmmcgcbdcq .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#zmmcgcbdcq .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#zmmcgcbdcq .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#zmmcgcbdcq .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#zmmcgcbdcq .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#zmmcgcbdcq div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    <tr class="gt_heading">
+      <td colspan="6" class="gt_heading gt_title gt_font_normal" style="background-color: #F6E58D; text-align: center; font-weight: bold;">S&amp;P500 Forecast Last Year</td>
+    </tr>
+    <tr class="gt_heading">
+      <td colspan="6" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="background-color: #F6E58D; text-align: center; font-weight: bold;">Forecast Period: Sep 2023 - Jul 2024 </td>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id=""></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="MN">MN</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="PRICE">PRICE</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="FORECAST_PRICE">FORECAST_PRICE</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="HI">HI</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" scope="col" id="LOW">LOW</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr class="gt_group_heading_row">
+      <th colspan="6" class="gt_group_heading" style="background-color: #7F8C8D; color: #FFFFFF; font-weight: bold;" scope="colgroup" id="2023">2023</th>
+    </tr>
+    <tr class="gt_row_group_first"><th id="stub_1_1" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2023 stub_1_1 mn" class="gt_row gt_center" style="text-align: center; font-weight: bold;">Nov 2023</td>
+<td headers="2023 stub_1_1 price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,303.20</td>
+<td headers="2023 stub_1_1 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,539.53</td>
+<td headers="2023 stub_1_1 Hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,701.53</td>
+<td headers="2023 stub_1_1 Low" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,377.53</td></tr>
+    <tr><th id="stub_1_2" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2023 stub_1_2 mn" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Dec 2023</td>
+<td headers="2023 stub_1_2 price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,587.16</td>
+<td headers="2023 stub_1_2 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,560.25</td>
+<td headers="2023 stub_1_2 Hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,789.35</td>
+<td headers="2023 stub_1_2 Low" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,331.16</td></tr>
+    <tr><th id="summary_stub_2023_1" scope="row" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">AVG</th>
+<td headers="2023 summary_stub_2023_1 mn" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">—</td>
+<td headers="2023 summary_stub_2023_1 price" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">4,445.2</td>
+<td headers="2023 summary_stub_2023_1 Forecast_Price" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">4,549.9</td>
+<td headers="2023 summary_stub_2023_1 Hi" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">4,745.4</td>
+<td headers="2023 summary_stub_2023_1 Low" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">4,354.3</td></tr>
+    <tr class="gt_group_heading_row">
+      <th colspan="6" class="gt_group_heading" style="background-color: #7F8C8D; color: #FFFFFF; font-weight: bold;" scope="colgroup" id="2024">2024</th>
+    </tr>
+    <tr class="gt_row_group_first"><th id="stub_1_3" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2024 stub_1_3 mn" class="gt_row gt_center" style="text-align: center; font-weight: bold;">Jan 2024</td>
+<td headers="2024 stub_1_3 price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,751.86</td>
+<td headers="2024 stub_1_3 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,580.98</td>
+<td headers="2024 stub_1_3 Hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,861.56</td>
+<td headers="2024 stub_1_3 Low" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,300.39</td></tr>
+    <tr><th id="stub_1_4" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2024 stub_1_4 mn" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Feb 2024</td>
+<td headers="2024 stub_1_4 price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,918.82</td>
+<td headers="2024 stub_1_4 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,601.70</td>
+<td headers="2024 stub_1_4 Hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,925.70</td>
+<td headers="2024 stub_1_4 Low" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,277.71</td></tr>
+    <tr><th id="stub_1_5" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2024 stub_1_5 mn" class="gt_row gt_center" style="text-align: center; font-weight: bold;">Mar 2024</td>
+<td headers="2024 stub_1_5 price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,095.55</td>
+<td headers="2024 stub_1_5 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,622.43</td>
+<td headers="2024 stub_1_5 Hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,984.66</td>
+<td headers="2024 stub_1_5 Low" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,260.19</td></tr>
+    <tr><th id="stub_1_6" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2024 stub_1_6 mn" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Apr 2024</td>
+<td headers="2024 stub_1_6 price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,196.14</td>
+<td headers="2024 stub_1_6 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,643.15</td>
+<td headers="2024 stub_1_6 Hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,039.96</td>
+<td headers="2024 stub_1_6 Low" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,246.35</td></tr>
+    <tr><th id="stub_1_7" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2024 stub_1_7 mn" class="gt_row gt_center" style="text-align: center; font-weight: bold;">May 2024</td>
+<td headers="2024 stub_1_7 price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,120.94</td>
+<td headers="2024 stub_1_7 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,663.88</td>
+<td headers="2024 stub_1_7 Hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,092.48</td>
+<td headers="2024 stub_1_7 Low" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,235.28</td></tr>
+    <tr><th id="stub_1_8" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2024 stub_1_8 mn" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Jun 2024</td>
+<td headers="2024 stub_1_8 price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,327.48</td>
+<td headers="2024 stub_1_8 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,684.60</td>
+<td headers="2024 stub_1_8 Hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,142.80</td>
+<td headers="2024 stub_1_8 Low" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,226.41</td></tr>
+    <tr><th id="stub_1_9" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2024 stub_1_9 mn" class="gt_row gt_center" style="text-align: center; font-weight: bold;">Jul 2024</td>
+<td headers="2024 stub_1_9 price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,530.34</td>
+<td headers="2024 stub_1_9 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,705.33</td>
+<td headers="2024 stub_1_9 Hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,191.32</td>
+<td headers="2024 stub_1_9 Low" class="gt_row gt_center" style="text-align: center; font-weight: bold;">4,219.34</td></tr>
+    <tr><th id="stub_1_10" scope="row" class="gt_row gt_left gt_stub"></th>
+<td headers="2024 stub_1_10 mn" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Aug 2024</td>
+<td headers="2024 stub_1_10 price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,419.35</td>
+<td headers="2024 stub_1_10 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,726.05</td>
+<td headers="2024 stub_1_10 Hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,238.33</td>
+<td headers="2024 stub_1_10 Low" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">4,213.78</td></tr>
+    <tr><th id="summary_stub_2024_1" scope="row" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">AVG</th>
+<td headers="2024 summary_stub_2024_1 mn" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">—</td>
+<td headers="2024 summary_stub_2024_1 price" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">5,170.1</td>
+<td headers="2024 summary_stub_2024_1 Forecast_Price" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">4,653.5</td>
+<td headers="2024 summary_stub_2024_1 Hi" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">5,059.6</td>
+<td headers="2024 summary_stub_2024_1 Low" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="background-color: #F6E58D; font-weight: bold;">4,247.4</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+<hr />
+</div>
+<div id="forecast-next-chart" class="section level3">
+<h3>Forecast Next Chart</h3>
+<div id="htmlwidget-6183dfbfe230ec844e22" style="width:800px;height:480px;" class="plotly html-widget"></div>
+<script type="application/json" data-for="htmlwidget-6183dfbfe230ec844e22">{"x":{"data":[{"x":[1725148800,1727740800,1730419200,1733011200,1735689600,1738368000,1740787200,1743465600,1746057600,1748736000,1751328000,1754006400],"y":[5403.2738893756832,5447.5943972821224,5471.9272635822854,5496.2601298824484,5520.5929961826123,5544.9258624827753,5569.2587287829383,5593.5915950831013,5617.9244613832643,5642.2573276834273,5666.5901939835903,5690.9230602837542],"text":["date: 2024-09-01<br />values: 5403.274<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2024-10-01<br />values: 5447.594<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2024-11-01<br />values: 5471.927<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2024-12-01<br />values: 5496.260<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2025-01-01<br />values: 5520.593<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2025-02-01<br />values: 5544.926<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2025-03-01<br />values: 5569.259<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2025-04-01<br />values: 5593.592<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2025-05-01<br />values: 5617.924<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2025-06-01<br />values: 5642.257<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2025-07-01<br />values: 5666.590<br />cat: Forecast_Price<br />cat: Forecast_Price","date: 2025-08-01<br />values: 5690.923<br />cat: Forecast_Price<br />cat: Forecast_Price"],"type":"scatter","mode":"lines","line":{"width":2.6456692913385824,"color":"rgba(248,118,109,1)","dash":"solid"},"hoveron":"points","name":"Forecast_Price","legendgroup":"Forecast_Price","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1725148800,1727740800,1730419200,1733011200,1735689600,1738368000,1740787200,1743465600,1746057600,1748736000,1751328000,1754006400],"y":[5568.7797086007504,5700.3730969921116,5773.1006114424099,5839.0628426714202,5900.4903696003312,5958.6048790691675,6014.1616880876463,6067.6664389973184,6119.4773220734332,6169.8590586327246,6219.0138547141005,6267.1003032993922],"text":["date: 2024-09-01<br />values: 5568.780<br />cat: hi<br />cat: hi","date: 2024-10-01<br />values: 5700.373<br />cat: hi<br />cat: hi","date: 2024-11-01<br />values: 5773.101<br />cat: hi<br />cat: hi","date: 2024-12-01<br />values: 5839.063<br />cat: hi<br />cat: hi","date: 2025-01-01<br />values: 5900.490<br />cat: hi<br />cat: hi","date: 2025-02-01<br />values: 5958.605<br />cat: hi<br />cat: hi","date: 2025-03-01<br />values: 6014.162<br />cat: hi<br />cat: hi","date: 2025-04-01<br />values: 6067.666<br />cat: hi<br />cat: hi","date: 2025-05-01<br />values: 6119.477<br />cat: hi<br />cat: hi","date: 2025-06-01<br />values: 6169.859<br />cat: hi<br />cat: hi","date: 2025-07-01<br />values: 6219.014<br />cat: hi<br />cat: hi","date: 2025-08-01<br />values: 6267.100<br />cat: hi<br />cat: hi"],"type":"scatter","mode":"lines","line":{"width":2.6456692913385824,"color":"rgba(0,186,56,1)","dash":"solid"},"hoveron":"points","name":"hi","legendgroup":"hi","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null},{"x":[1725148800,1727740800,1730419200,1733011200,1735689600,1738368000,1740787200,1743465600,1746057600,1748736000,1751328000,1754006400],"y":[5237.768070150616,5194.8156975721331,5170.7539157221609,5153.4574170934766,5140.6956227648934,5131.2468458963831,5124.3557694782303,5119.5167511688842,5116.3716006930954,5114.6555967341301,5114.1665332530802,5114.7458172681163],"text":["date: 2024-09-01<br />values: 5237.768<br />cat: lo<br />cat: lo","date: 2024-10-01<br />values: 5194.816<br />cat: lo<br />cat: lo","date: 2024-11-01<br />values: 5170.754<br />cat: lo<br />cat: lo","date: 2024-12-01<br />values: 5153.457<br />cat: lo<br />cat: lo","date: 2025-01-01<br />values: 5140.696<br />cat: lo<br />cat: lo","date: 2025-02-01<br />values: 5131.247<br />cat: lo<br />cat: lo","date: 2025-03-01<br />values: 5124.356<br />cat: lo<br />cat: lo","date: 2025-04-01<br />values: 5119.517<br />cat: lo<br />cat: lo","date: 2025-05-01<br />values: 5116.372<br />cat: lo<br />cat: lo","date: 2025-06-01<br />values: 5114.656<br />cat: lo<br />cat: lo","date: 2025-07-01<br />values: 5114.167<br />cat: lo<br />cat: lo","date: 2025-08-01<br />values: 5114.746<br />cat: lo<br />cat: lo"],"type":"scatter","mode":"lines","line":{"width":2.6456692913385824,"color":"rgba(97,156,255,1)","dash":"solid"},"hoveron":"points","name":"lo","legendgroup":"lo","showlegend":true,"xaxis":"x","yaxis":"y","hoverinfo":"text","frame":null}],"layout":{"margin":{"t":22.088280060882802,"r":7.3059360730593621,"b":23.02476823024768,"l":37.525944375259442},"plot_bgcolor":"rgba(255,255,255,1)","paper_bgcolor":"rgba(255,255,255,1)","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724},"xaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[1723705920,1755449280],"tickmode":"array","ticktext":["Sep-24","Oct-24","Nov-24","Dec-24","Jan-25","Feb-25","Mar-25","Apr-25","May-25","Jun-25","Jul-25","Aug-25"],"tickvals":[1725148800,1727740800,1730419200,1733011200,1735689600,1738368000,1740787200,1743465600,1746057600,1748736000,1751328000,1754006400],"categoryorder":"array","categoryarray":["Sep-24","Oct-24","Nov-24","Dec-24","Jan-25","Feb-25","Mar-25","Apr-25","May-25","Jun-25","Jul-25","Aug-25"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(0,0,0,1)","family":"","size":13.283520132835198},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"y","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"yaxis":{"domain":[0,1],"automargin":true,"type":"linear","autorange":false,"range":[5056.5198447507646,6324.7469918017077],"tickmode":"array","ticktext":["5100","5400","5700","6000","6300"],"tickvals":[5100,5400,5700,6000,6300],"categoryorder":"array","categoryarray":["5100","5400","5700","6000","6300"],"nticks":null,"ticks":"outside","tickcolor":"rgba(51,51,51,1)","ticklen":3.6529680365296811,"tickwidth":0.66417600664176002,"showticklabels":true,"tickfont":{"color":"rgba(0,0,0,1)","family":"","size":13.283520132835198},"tickangle":-0,"showline":false,"linecolor":null,"linewidth":0,"showgrid":true,"gridcolor":"rgba(235,235,235,1)","gridwidth":0.66417600664176002,"zeroline":false,"anchor":"x","title":{"text":"","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}},"hoverformat":".2f"},"shapes":[{"type":"rect","fillcolor":"transparent","line":{"color":"rgba(51,51,51,1)","width":0.66417600664176002,"linetype":"solid"},"yref":"paper","xref":"paper","x0":0,"x1":1,"y0":0,"y1":1}],"showlegend":true,"legend":{"bgcolor":"rgba(255,255,255,1)","bordercolor":"transparent","borderwidth":1.8897637795275593,"font":{"color":"rgba(0,0,0,1)","family":"","size":11.68949771689498},"title":{"text":"cat","font":{"color":"rgba(0,0,0,1)","family":"","size":14.611872146118724}}},"hovermode":"closest","width":800,"barmode":"relative"},"config":{"doubleClick":"reset","modeBarButtonsToAdd":["hoverclosest","hovercompare"],"showSendToCloud":false},"source":"A","attrs":{"39905c836007":{"x":{},"y":{},"colour":{},"type":"scatter"}},"cur_data":"39905c836007","visdat":{"39905c836007":["function (y) ","x"]},"highlight":{"on":"plotly_click","persistent":false,"dynamic":false,"selectize":false,"opacityDim":0.20000000000000001,"selected":{"opacity":1},"debounce":0},"shinyEvents":["plotly_hover","plotly_click","plotly_selected","plotly_relayout","plotly_brushed","plotly_brushing","plotly_clickannotation","plotly_doubleclick","plotly_deselect","plotly_afterplot","plotly_sunburstclick"],"base_url":"https://plot.ly"},"evals":[],"jsHooks":[]}</script>
+<hr />
+</div>
+<div id="forecast-next-table" class="section level3">
+<h3>Forecast Next Table</h3>
+<div id="meoclzjzjj" style="padding-left:0px;padding-right:0px;padding-top:10px;padding-bottom:10px;overflow-x:auto;overflow-y:auto;width:auto;height:auto;">
+<style>#meoclzjzjj table {
+  font-family: system-ui, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji', 'Segoe UI Symbol', 'Noto Color Emoji';
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+#meoclzjzjj thead, #meoclzjzjj tbody, #meoclzjzjj tfoot, #meoclzjzjj tr, #meoclzjzjj td, #meoclzjzjj th {
+  border-style: none;
+}
+
+#meoclzjzjj p {
+  margin: 0;
+  padding: 0;
+}
+
+#meoclzjzjj .gt_table {
+  display: table;
+  border-collapse: collapse;
+  line-height: normal;
+  margin-left: auto;
+  margin-right: auto;
+  color: #333333;
+  font-size: 16px;
+  font-weight: normal;
+  font-style: normal;
+  background-color: #FFFFFF;
+  width: auto;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+}
+
+#meoclzjzjj .gt_caption {
+  padding-top: 4px;
+  padding-bottom: 4px;
+}
+
+#meoclzjzjj .gt_title {
+  color: #333333;
+  font-size: 125%;
+  font-weight: initial;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-color: #FFFFFF;
+  border-bottom-width: 0;
+}
+
+#meoclzjzjj .gt_subtitle {
+  color: #333333;
+  font-size: 85%;
+  font-weight: initial;
+  padding-top: 3px;
+  padding-bottom: 5px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-color: #FFFFFF;
+  border-top-width: 0;
+}
+
+#meoclzjzjj .gt_heading {
+  background-color: #FFFFFF;
+  text-align: center;
+  border-bottom-color: #FFFFFF;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#meoclzjzjj .gt_bottom_border {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+}
+
+#meoclzjzjj .gt_col_headings {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+}
+
+#meoclzjzjj .gt_col_heading {
+  color: #FFFFFF;
+  background-color: #004D80;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 6px;
+  padding-left: 5px;
+  padding-right: 5px;
+  overflow-x: hidden;
+}
+
+#meoclzjzjj .gt_column_spanner_outer {
+  color: #FFFFFF;
+  background-color: #004D80;
+  font-size: 100%;
+  font-weight: normal;
+  text-transform: inherit;
+  padding-top: 0;
+  padding-bottom: 0;
+  padding-left: 4px;
+  padding-right: 4px;
+}
+
+#meoclzjzjj .gt_column_spanner_outer:first-child {
+  padding-left: 0;
+}
+
+#meoclzjzjj .gt_column_spanner_outer:last-child {
+  padding-right: 0;
+}
+
+#meoclzjzjj .gt_column_spanner {
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  vertical-align: bottom;
+  padding-top: 5px;
+  padding-bottom: 5px;
+  overflow-x: hidden;
+  display: inline-block;
+  width: 100%;
+}
+
+#meoclzjzjj .gt_spanner_row {
+  border-bottom-style: hidden;
+}
+
+#meoclzjzjj .gt_group_heading {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #D3D3D3;
+  vertical-align: middle;
+  text-align: left;
+}
+
+#meoclzjzjj .gt_empty_group_heading {
+  padding: 0.5px;
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+  vertical-align: middle;
+}
+
+#meoclzjzjj .gt_from_md > :first-child {
+  margin-top: 0;
+}
+
+#meoclzjzjj .gt_from_md > :last-child {
+  margin-bottom: 0;
+}
+
+#meoclzjzjj .gt_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  margin: 10px;
+  border-top-style: dashed;
+  border-top-width: 1px;
+  border-top-color: #929292;
+  border-left-style: none;
+  border-left-width: 1px;
+  border-left-color: #929292;
+  border-right-style: none;
+  border-right-width: 1px;
+  border-right-color: #929292;
+  vertical-align: middle;
+  overflow-x: hidden;
+}
+
+#meoclzjzjj .gt_stub {
+  color: #333333;
+  background-color: #D5D5D5;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #FFFFFF;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#meoclzjzjj .gt_stub_row_group {
+  color: #333333;
+  background-color: #FFFFFF;
+  font-size: 100%;
+  font-weight: initial;
+  text-transform: inherit;
+  border-right-style: solid;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+  padding-left: 5px;
+  padding-right: 5px;
+  vertical-align: top;
+}
+
+#meoclzjzjj .gt_row_group_first td {
+  border-top-width: 2px;
+}
+
+#meoclzjzjj .gt_row_group_first th {
+  border-top-width: 2px;
+}
+
+#meoclzjzjj .gt_summary_row {
+  color: #333333;
+  background-color: #FFFFFF;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#meoclzjzjj .gt_first_summary_row {
+  border-top-style: solid;
+  border-top-color: #929292;
+}
+
+#meoclzjzjj .gt_first_summary_row.thick {
+  border-top-width: 2px;
+}
+
+#meoclzjzjj .gt_last_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+}
+
+#meoclzjzjj .gt_grand_summary_row {
+  color: #333333;
+  background-color: #D5D5D5;
+  text-transform: inherit;
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#meoclzjzjj .gt_first_grand_summary_row {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-top-style: double;
+  border-top-width: 6px;
+  border-top-color: #929292;
+}
+
+#meoclzjzjj .gt_last_grand_summary_row_top {
+  padding-top: 8px;
+  padding-bottom: 8px;
+  padding-left: 5px;
+  padding-right: 5px;
+  border-bottom-style: double;
+  border-bottom-width: 6px;
+  border-bottom-color: #929292;
+}
+
+#meoclzjzjj .gt_striped {
+  background-color: #F4F4F4;
+}
+
+#meoclzjzjj .gt_table_body {
+  border-top-style: solid;
+  border-top-width: 2px;
+  border-top-color: #929292;
+  border-bottom-style: solid;
+  border-bottom-width: 2px;
+  border-bottom-color: #929292;
+}
+
+#meoclzjzjj .gt_footnotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#meoclzjzjj .gt_footnote {
+  margin: 0px;
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#meoclzjzjj .gt_sourcenotes {
+  color: #333333;
+  background-color: #FFFFFF;
+  border-bottom-style: none;
+  border-bottom-width: 2px;
+  border-bottom-color: #D3D3D3;
+  border-left-style: none;
+  border-left-width: 2px;
+  border-left-color: #D3D3D3;
+  border-right-style: none;
+  border-right-width: 2px;
+  border-right-color: #D3D3D3;
+}
+
+#meoclzjzjj .gt_sourcenote {
+  font-size: 90%;
+  padding-top: 4px;
+  padding-bottom: 4px;
+  padding-left: 5px;
+  padding-right: 5px;
+}
+
+#meoclzjzjj .gt_left {
+  text-align: left;
+}
+
+#meoclzjzjj .gt_center {
+  text-align: center;
+}
+
+#meoclzjzjj .gt_right {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+#meoclzjzjj .gt_font_normal {
+  font-weight: normal;
+}
+
+#meoclzjzjj .gt_font_bold {
+  font-weight: bold;
+}
+
+#meoclzjzjj .gt_font_italic {
+  font-style: italic;
+}
+
+#meoclzjzjj .gt_super {
+  font-size: 65%;
+}
+
+#meoclzjzjj .gt_footnote_marks {
+  font-size: 75%;
+  vertical-align: 0.4em;
+  position: initial;
+}
+
+#meoclzjzjj .gt_asterisk {
+  font-size: 100%;
+  vertical-align: 0;
+}
+
+#meoclzjzjj .gt_indent_1 {
+  text-indent: 5px;
+}
+
+#meoclzjzjj .gt_indent_2 {
+  text-indent: 10px;
+}
+
+#meoclzjzjj .gt_indent_3 {
+  text-indent: 15px;
+}
+
+#meoclzjzjj .gt_indent_4 {
+  text-indent: 20px;
+}
+
+#meoclzjzjj .gt_indent_5 {
+  text-indent: 25px;
+}
+
+#meoclzjzjj .katex-display {
+  display: inline-flex !important;
+  margin-bottom: 0.75em !important;
+}
+
+#meoclzjzjj div.Reactable > div.rt-table > div.rt-thead > div.rt-tr.rt-tr-group-header > div.rt-th-group:after {
+  height: 0px !important;
+}
+</style>
+<table class="gt_table" data-quarto-disable-processing="false" data-quarto-bootstrap="false">
+  <thead>
+    <tr class="gt_heading">
+      <td colspan="5" class="gt_heading gt_title gt_font_normal" style="text-align: center; font-weight: bold; background-color: #F6E58D;">S&amp;P500 Forecast Model</td>
+    </tr>
+    <tr class="gt_heading">
+      <td colspan="5" class="gt_heading gt_subtitle gt_font_normal gt_bottom_border" style="text-align: center; font-weight: bold; background-color: #F6E58D;">Forecast Period : Sep 2024 : Feb 2026</td>
+    </tr>
+    <tr class="gt_col_headings">
+      <th class="gt_col_heading gt_columns_bottom_border gt_left" rowspan="1" colspan="1" scope="col" id=""></th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="text-align: center; font-weight: bold;" scope="col" id="DATE">DATE</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="text-align: center; font-weight: bold;" scope="col" id="FORECAST_PRICE">FORECAST_PRICE</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="text-align: center; font-weight: bold;" scope="col" id="HI">HI</th>
+      <th class="gt_col_heading gt_columns_bottom_border gt_center" rowspan="1" colspan="1" style="text-align: center; font-weight: bold;" scope="col" id="LO">LO</th>
+    </tr>
+  </thead>
+  <tbody class="gt_table_body">
+    <tr class="gt_group_heading_row">
+      <th colspan="5" class="gt_group_heading" style="color: #000000; font-weight: bold; background-color: #BEBEBE;" scope="colgroup" id="2024">2024</th>
+    </tr>
+    <tr class="gt_row_group_first"><th id="stub_1_1" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2024 stub_1_1 date" class="gt_row gt_center" style="text-align: center; font-weight: bold;">Sep 2024</td>
+<td headers="2024 stub_1_1 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,403.27</td>
+<td headers="2024 stub_1_1 hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,568.78</td>
+<td headers="2024 stub_1_1 lo" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,237.77</td></tr>
+    <tr><th id="stub_1_2" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2024 stub_1_2 date" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Oct 2024</td>
+<td headers="2024 stub_1_2 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,447.59</td>
+<td headers="2024 stub_1_2 hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,700.37</td>
+<td headers="2024 stub_1_2 lo" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,194.82</td></tr>
+    <tr><th id="stub_1_3" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2024 stub_1_3 date" class="gt_row gt_center" style="text-align: center; font-weight: bold;">Nov 2024</td>
+<td headers="2024 stub_1_3 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,471.93</td>
+<td headers="2024 stub_1_3 hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,773.10</td>
+<td headers="2024 stub_1_3 lo" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,170.75</td></tr>
+    <tr><th id="stub_1_4" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2024 stub_1_4 date" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Dec 2024</td>
+<td headers="2024 stub_1_4 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,496.26</td>
+<td headers="2024 stub_1_4 hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,839.06</td>
+<td headers="2024 stub_1_4 lo" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,153.46</td></tr>
+    <tr><th id="summary_stub_2024_1" scope="row" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">AVG</th>
+<td headers="2024 summary_stub_2024_1 date" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">—</td>
+<td headers="2024 summary_stub_2024_1 Forecast_Price" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">5,454.8</td>
+<td headers="2024 summary_stub_2024_1 hi" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">5,720.3</td>
+<td headers="2024 summary_stub_2024_1 lo" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">5,189.2</td></tr>
+    <tr class="gt_group_heading_row">
+      <th colspan="5" class="gt_group_heading" style="color: #000000; font-weight: bold; background-color: #BEBEBE;" scope="colgroup" id="2025">2025</th>
+    </tr>
+    <tr class="gt_row_group_first"><th id="stub_1_5" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2025 stub_1_5 date" class="gt_row gt_center" style="text-align: center; font-weight: bold;">Jan 2025</td>
+<td headers="2025 stub_1_5 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,520.59</td>
+<td headers="2025 stub_1_5 hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,900.49</td>
+<td headers="2025 stub_1_5 lo" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,140.70</td></tr>
+    <tr><th id="stub_1_6" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2025 stub_1_6 date" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Feb 2025</td>
+<td headers="2025 stub_1_6 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,544.93</td>
+<td headers="2025 stub_1_6 hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,958.60</td>
+<td headers="2025 stub_1_6 lo" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,131.25</td></tr>
+    <tr><th id="stub_1_7" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2025 stub_1_7 date" class="gt_row gt_center" style="text-align: center; font-weight: bold;">Mar 2025</td>
+<td headers="2025 stub_1_7 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,569.26</td>
+<td headers="2025 stub_1_7 hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">6,014.16</td>
+<td headers="2025 stub_1_7 lo" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,124.36</td></tr>
+    <tr><th id="stub_1_8" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2025 stub_1_8 date" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Apr 2025</td>
+<td headers="2025 stub_1_8 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,593.59</td>
+<td headers="2025 stub_1_8 hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">6,067.67</td>
+<td headers="2025 stub_1_8 lo" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,119.52</td></tr>
+    <tr><th id="stub_1_9" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2025 stub_1_9 date" class="gt_row gt_center" style="text-align: center; font-weight: bold;">May 2025</td>
+<td headers="2025 stub_1_9 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,617.92</td>
+<td headers="2025 stub_1_9 hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">6,119.48</td>
+<td headers="2025 stub_1_9 lo" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,116.37</td></tr>
+    <tr><th id="stub_1_10" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2025 stub_1_10 date" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Jun 2025</td>
+<td headers="2025 stub_1_10 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,642.26</td>
+<td headers="2025 stub_1_10 hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">6,169.86</td>
+<td headers="2025 stub_1_10 lo" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,114.66</td></tr>
+    <tr><th id="stub_1_11" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2025 stub_1_11 date" class="gt_row gt_center" style="text-align: center; font-weight: bold;">Jul 2025</td>
+<td headers="2025 stub_1_11 Forecast_Price" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,666.59</td>
+<td headers="2025 stub_1_11 hi" class="gt_row gt_center" style="text-align: center; font-weight: bold;">6,219.01</td>
+<td headers="2025 stub_1_11 lo" class="gt_row gt_center" style="text-align: center; font-weight: bold;">5,114.17</td></tr>
+    <tr><th id="stub_1_12" scope="row" class="gt_row gt_center gt_stub"></th>
+<td headers="2025 stub_1_12 date" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">Aug 2025</td>
+<td headers="2025 stub_1_12 Forecast_Price" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,690.92</td>
+<td headers="2025 stub_1_12 hi" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">6,267.10</td>
+<td headers="2025 stub_1_12 lo" class="gt_row gt_center gt_striped" style="text-align: center; font-weight: bold;">5,114.75</td></tr>
+    <tr><th id="summary_stub_2025_1" scope="row" class="gt_row gt_left gt_stub gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">AVG</th>
+<td headers="2025 summary_stub_2025_1 date" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">—</td>
+<td headers="2025 summary_stub_2025_1 Forecast_Price" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">5,605.8</td>
+<td headers="2025 summary_stub_2025_1 hi" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">6,089.5</td>
+<td headers="2025 summary_stub_2025_1 lo" class="gt_row gt_center gt_summary_row gt_first_summary_row thick gt_last_summary_row" style="text-align: center; font-weight: bold; background-color: #F6E58D;">5,122.0</td></tr>
+  </tbody>
+  
+  
+</table>
+</div>
+<hr />
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open');
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // temporarily add toc-ignore selector to headers for the consistency with Pandoc
+    $('.unlisted.unnumbered').addClass('toc-ignore')
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

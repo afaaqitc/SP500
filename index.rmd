@@ -1,0 +1,188 @@
+---
+title: "SP500-Forecast"
+author: "JDRK"
+date: "`r Sys.Date()`"
+output: 
+  html_document:
+    theme: flatly
+    toc: yes
+    toc_float:
+      collapsed: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+library(rmdformats)
+library(prettydoc)
+library(hrbrthemes)
+library(tint)
+library(tufte)
+library(dplyr)
+library(tidyr)
+library(stringr)
+library(formattable)
+library(data.table)
+library(forecast)
+library(tseries)
+library(lubridate)
+library(DT)
+library(gt)
+library(ggplot2)
+library(plotly)
+library(openxlsx)
+library(janitor)
+library(pacman)
+library(scales)
+library(quantmod)
+library(tibble)
+
+#---------------------------------------------------------------------------
+
+getSymbols("^GSPC",from="2010-01-01")
+
+sp<-rownames_to_column(data.frame(GSPC))
+
+sp<- sp %>% mutate(rowname=ymd(rowname))%>% 
+select(rowname,GSPC.Adjusted) %>% rename(date=rowname,price=GSPC.Adjusted) %>%
+mutate(wk=round_date(date,"week"),mn=round_date(date,"month"))
+
+mn<- sp %>% group_by(mn) %>% summarize(price=mean(price))
+ 
+mdate<-mn[c(167:176),]  
+
+mts<-ts(mn$price,start =c(2010,1) ,end =c(2023,8) ,frequency = 12)
+
+autoplot(decompose(diff(mts)))
+
+mna<-auto.arima(mts)
+mnf<-forecast(mna,h = 10)
+
+autoplot(mnf)
+
+detect_last<-
+cbind(rownames_to_column(data.frame(mnf)),mdate) %>% 
+select(mn,price,Point.Forecast,Lo.95,Lo.80,Hi.80,Hi.95) %>%
+rename(Forecast_Price=Point.Forecast) %>% mutate(Low=(Lo.80+Lo.95)/2,Hi=(Hi.80+Hi.95)/2) %>% 
+select(mn,price,Forecast_Price,Hi,Low)
+
+
+detect_last_get<-
+detect_last %>% gt %>% fmt_date(columns = 1,date_style = "yMMM") %>% fmt_number(columns = c(2:5),decimals = 2) %>% 
+tab_row_group(label ="2023" ,rows =mn>"2023-01-01"&mn<="2023-12-31" ,id = "2023",group = "2023") %>% 
+tab_row_group(label = "2024",rows =mn>="2024-01-01"&mn<="2024-12-31" ,id = "2024",group = "2024") %>% 
+row_group_order(groups = c("2023","2024")) %>% cols_align(align = "center",columns = everything()) %>% 
+cols_label_with(columns = everything(),fn = toupper) %>% 
+tab_header(title ="S&P500 Forecast Last Year" ,subtitle ="Forecast Period: Sep 2023 - Jul 2024 " ) %>% 
+summary_rows(groups = everything(),columns = c(2:5),fns = list(AVG=~mean(.)),formatter = fmt_number,decimals=1) %>% 
+tab_style(style =list(cell_text(align = "center",weight = "bold")) ,locations =cells_body() ) %>% 
+tab_style(style = list(cell_fill(color="#f6e58d"),cell_text(align = "center",weight = "bold")),locations =cells_title() ) %>% 
+opt_stylize(style = 3) %>% 
+tab_style(style = list(cell_fill(color="#7f8c8d"),cell_text(color="white",weight = "bold")),locations =cells_row_groups() )%>% 
+tab_style(style = list(cell_fill(color="#f6e58d"),cell_text(weight = "bold")),locations =cells_summary() ) %>% 
+  tab_style(style = list(cell_fill(color="#f6e58d"),cell_text(weight = "bold")),locations =cells_stub_summary() ) 
+
+
+
+detect_last_chart<-
+detect_last %>% mutate(mn=as.POSIXct(mn))%>% 
+pivot_longer(!mn,names_to ="cat" ,values_to = "values") %>% 
+ggplot(aes(x=mn,y=values,color=cat,group=cat))+geom_line(size=0.7)+theme_bw()+
+scale_x_datetime(date_breaks = "month",date_labels = "%B")+
+theme(axis.text.x = element_text(size = 10,colour = "black",face = "bold"),
+axis.text.y = element_text(size = 10,colour = "black",face = "bold"))+
+labs(x="",y="")+scale_fill_brewer(palette = "Set1")+
+scale_y_continuous(breaks = c(3500,4000,4500,5000,5500,6000))
+
+summary(lm(detect_last$Forecast_Price~detect_last$price))
+pairs(detect_last$Forecast_Price~detect_last$price)
+
+
+#Real
+
+mnt<-ts(mn$price,start =c(2010,1) ,end =c(2024,8) ,frequency = 12)
+
+
+autoplot(decompose(diff(mnt)))
+mnra<-auto.arima(mnt)
+mnrf<-forecast(mnra,h = 12)
+
+autoplot(mnrf)
+
+
+next_dates<-data.frame(date=seq(as.Date("2024-9-1"),by="month",len=12))
+
+
+
+mn_forecast<-
+cbind(next_dates,rownames_to_column(data.frame(mnrf))) %>%
+rename(Forecast_Price=Point.Forecast) %>% select(- c("rowname")) %>% 
+mutate(hi=(Hi.95+Hi.80)/2,lo=(Lo.80+Lo.95)/2) %>%
+select(date,Forecast_Price,hi,lo) 
+
+
+mn_forecast_chart<-
+mn_forecast %>% mutate(date=as.POSIXct(date)) %>% 
+pivot_longer(!date,names_to = "cat",values_to = "values") %>% 
+ggplot(aes(x=date,y=values,color=cat,group=cat))+geom_line(size=0.7)+
+theme_bw()+labs(x="",y="")+
+theme(,axis.text.x = element_text(size = 10,face = "bold",color="black"),
+      axis.text.y = element_text(size = 10,face = "bold",color="black"))+
+  scale_x_datetime(date_breaks ="month" ,date_labels = "%b-%y")
+
+mn_forecast_gt<-
+mn_forecast %>% gt() %>%fmt_date(columns =1 ,date_style = "yMMM") %>% 
+fmt_number(columns = c(2:4),decimals = 2) %>%
+tab_row_group(label ="2026" ,rows =date>="2026-01-01" & date<="2026-12-31" ,id = "2026",group ="2026" ) %>% 
+tab_row_group(label ="2025" ,rows =date>="2025-01-01" & date<="2025-12-31" ,id = "2025",group ="2025" )%>% 
+tab_row_group(label ="2024" ,rows =date>="2024-01-01" & date<="2024-12-31" ,id = "2024",group ="2024" ) %>% 
+tab_header(title = "S&P500 Forecast Model",subtitle = "Forecast Period : Sep 2024 : Feb 2026") %>% 
+summary_rows(groups =everything() ,columns =c(2:4) ,fns =list(AVG=~mean(.)) ,formatter = fmt_number,decimals=1) %>% 
+cols_label_with(columns =everything() ,fn = toupper) %>% 
+cols_align(align = "center",columns = everything()) %>% 
+tab_style(style = list(cell_text(align = "center",weight = "bold")),locations = cells_body()) %>% 
+tab_style(style =list(cell_text(weight = "bold",align = "center") ),locations = cells_column_labels()) %>% 
+opt_stylize(style = 3) %>% 
+tab_style(style =list(cell_text(weight = "bold",align = "center") ,cell_fill(color="#f6e58d")),
+locations = cells_title()) %>% 
+tab_style(style =list(cell_text(weight = "bold",color="black") ,cell_fill(color="gray")),
+locations = cells_row_groups()) %>% 
+tab_style(style =list(cell_text(weight = "bold",align = "center") ,cell_fill(color="#f6e58d")),
+locations = cells_summary()) %>% 
+tab_style(style =list(cell_text(weight = "bold",align = "center") ,cell_fill(color="#f6e58d")),
+locations = cells_stub_summary()) 
+```
+
+--------------------------------------------------------------------------
+
+### Last Year Chart
+```{r,echo=FALSE,message=FALSE}
+ggplotly( detect_last_chart,width = 800)
+```
+
+--------------------------------------------------------------------------
+ 
+### Last Year Table
+```{r,echo=FALSE,message=FALSE}
+detect_last_get
+```
+
+
+--------------------------------------------------------------------------
+ 
+### Forecast Next Chart
+```{r ,echo=FALSE,message=FALSE}
+ggplotly(mn_forecast_chart,width = 800)
+```
+
+--------------------------------------------------------------------------
+
+### Forecast Next Table
+```{r ,echo=FALSE,message=FALSE}
+mn_forecast_gt
+```
+
+--------------------------------------------------------------------------
+
+
+
+
