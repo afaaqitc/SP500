@@ -187,6 +187,8 @@ mn_forecast_gt
 
 
 ### Other Model 
-[BTCUSDT](https://afaaqitc.github.io/BTC-Forecast/)
 
-[Oil-CL=F](https://afaaqitc.github.io/SP500/#Last_Year_Table)
+[BTCUSDT](https://afaaqitc.github.io/BTC-Forecast/){target="_blank"}
+
+[Oil-CL=F Model:](https://afaaqitc.github.io/OIL-Forecast/#Detect_Forecast_Model_Fore_Last_8_Months){target="_blank"}
+
