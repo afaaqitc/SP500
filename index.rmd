@@ -19,7 +19,7 @@ library(hrbrthemes)
 library(pacman)
 
 
-p_load("dplyr","tidyr","lubridate","janitor","data.table","DT",
+p_load("dplyr","tidyr","lubridate","janitor","data.table","DT","rvest",
 "gt","forecast","stringr","gmodels","scales","ggplot2","GGally","plotly",
 "quantmod","openxlsx","readxl","tseries","formattable","tibble")
 
@@ -150,8 +150,59 @@ row_group_order(groups = c("2024","2025")) %>%
 tab_style(style =list(cell_fill("#fdcb6e"),cell_text(weight = "bold")) ,
 locations = cells_row_groups())    
    
+# TOP 15 SP Companies
+
+
+
+
+sp_link<-"https://stockanalysis.com/list/sp-500-stocks/"
+
+sp<-read_html(sp_link)
+
+sp<-sp %>% html_table(fill = TRUE)
+
+sp<-sp[[1]]
+
+sp<-
+sp %>% clean_names() %>% mutate(market_cap=gsub("B","",market_cap),
+market_cap=as.numeric( gsub(",","",market_cap))) %>% 
+mutate(revenue=case_when(grepl("M",revenue)==TRUE ~  
+gsub("M","",revenue) , TRUE ~ gsub("B","",revenue)),
+revenue=as.numeric( gsub(",","",revenue))) %>%
+mutate(pct=as.numeric(revenue)/as.numeric(market_cap)) 
+
+sp_tbl<-
+sp %>%select(1:5,7) %>% head(15) %>% 
+rename_with(.fn = toupper,.cols = everything()) %>% gt() %>% 
+tab_header(title = "Top 10 S&P Companies  By Market Cap",subtitle ="Revenue & Cap in Millions." ) %>% opt_stylize(style = 3) %>% 
+fmt_number(columns =c(4,5) ,decimals = 2) %>% 
+tab_row_group(label = "Top",group = "Top",rows = NO<=5) %>% 
+tab_style(style =list(cell_fill(color="#FADFA1"),
+cell_text(align = "center",color="black",weight = "bold")) ,locations = cells_title()) %>% 
+tab_style(style =list(cell_fill(color="gray"),cell_text(color="black",weight = "bold")) ,
+locations = cells_row_groups()) %>% 
+tab_style(style =list(cell_text(weight = "bold",align = "center")) ,locations = cells_body()) %>% 
+tab_style(style =cell_text(align = "center",weight = "bold") ,locations = cells_column_labels()) %>% 
+tab_source_note(source_note = "https://stockanalysis.com/list/sp-500-stocks/") %>% 
+tab_style(style = list(cell_fill("#B4B4B8"),cell_text(color="black",style = "italic")),locations = cells_source_notes())
+
+
+
+
  
 ```
+
+
+--------------------------------------------------------------------------
+
+
+
+### Top 15 S&P500 Companies
+```{r echo=FALSE,warning=FALSE,message=FALSE}
+sp_tbl
+```
+
+
 
 --------------------------------------------------------------------------
 
@@ -192,11 +243,12 @@ sp_forecast_gt
 --------------------------------------------------------------------------
 
 
-
-
 ### Other Model 
 
 [BTCUSDT](https://afaaqitc.github.io/BTC-Forecast/){target="_blank"}
 
 [Oil-CL=F Model:](https://afaaqitc.github.io/OIL-Forecast/#Detect_Forecast_Model_Fore_Last_8_Months){target="_blank"}
+
+
+
 
